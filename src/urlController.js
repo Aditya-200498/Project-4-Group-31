@@ -7,11 +7,11 @@ const { promisify } = require("util");
 
 //Connect to redis
 const redisClient = redis.createClient(
-    19382,
-    "redis-19382.c301.ap-south-1-1.ec2.cloud.redislabs.com",
+    14084,
+    "redis-14084.c212.ap-south-1-1.ec2.cloud.redislabs.com",
     { no_ready_check: true }
 );
-redisClient.auth("DDebcA8K76cXEsz5jeMl2nri7ir0VrUl", function (err) {
+redisClient.auth("4nWUSqDIKkNZGfyUIwiKRohJOatjjiNX", function (err) {
     if (err) throw err;
 });
 
@@ -31,7 +31,7 @@ const isValidRequest = function (request) {
     return (Object.keys(request).length > 0)
 }
 //value validation
-const isValidValue = function (value) {
+const isValidValue = function (value) {   
     if (typeof value === 'undefined' || value === null) return false
     if (typeof value === 'string' && value.trim().length === 0) return false
     if (typeof value === 'number' && value.toString().trim().length === 0) return false
@@ -54,11 +54,14 @@ const shortenUrl = async (req, res) => {
             let parseLongUrl = JSON.parse(cachedLongUrl)
             return res.status(200).send({status:true,message: "Shorten link already generated previously", data:parseLongUrl})
         }
-
+      
         //Url Validations
+        if (!longUrl) {
+            return res.status(400).send({status: false, msg: "not present"})
+        }
         if (!isValidRequest(req.body)) return res.status(400).send({ status: false, message: "No input by user" })
         if (!isValidValue(longUrl)) return res.status(400).send({ status: false, message: "longUrl is required." })
-        if (!validUrl.isUri(longUrl) || !isValidUrl(longUrl)) return res.status(400).send({ status: false, message: "Long Url is invalid." })
+        if (!isValidUrl(longUrl)) return res.status(400).send({ status: false, message: "Long Url is invalid." })
 
         let baseUrl = "http://localhost:3000"
         if (!validUrl.isUri(baseUrl)) return res.status(400).send({ status: false, message: `${baseUrl} is invalid base Url` })
@@ -69,7 +72,7 @@ const shortenUrl = async (req, res) => {
         // } else {
 
             //Short id generation
-            let shortUrlCode = shortid.generate()
+            let shortUrlCode = shortid.generate().toLowerCase()
             const alreadyExistCode = await urlModel.findOne({ urlCode: shortUrlCode })
             if (alreadyExistCode) return res.status(400).send({ status: false, message: `${alreadyExistCode} is already exist` })
            
@@ -103,7 +106,7 @@ const getUrl = async (req, res) => {
         console.log("1")
             let parseUrl = JSON.parse(cachedUrlCode)
             let cachedLongUrl = parseUrl.longUrl
-            return res.status(302).redirect(cachedLongUrl)
+            return res.status(307).redirect(cachedLongUrl)
         }
         let findUrlcode = await urlModel.findOne({ urlCode })
         console.log("2")
@@ -113,7 +116,7 @@ const getUrl = async (req, res) => {
         await SET_ASYNC(`${urlCode}`, JSON.stringify(findUrlcode))
         console.log("3")
 
-        return res.status(302).redirect(findUrlcode.longUrl)
+        return res.status(307).redirect(findUrlcode.longUrl)
 
     } catch (err) {
         return res.status(500).send({ status: false, message: err.message })

@@ -8,7 +8,7 @@ const route = require('./routes');
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
-mongoose.connect("mongodb+srv://animesh-dey98:9I9JRLwql3bINqUX@cluster0.vhmqo.mongodb.net/project-urlShortener", {
+mongoose.connect("mongodb+srv://Aditya1998:aadi1998@cluster0.zl7lv.mongodb.net/OurProject-4?retryWrites=true&w=majority", {
     useNewUrlParser: true
 })
 
